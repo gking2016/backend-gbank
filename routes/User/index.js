@@ -6,22 +6,36 @@ const UserServices = require('../../services/UserServices/index.js');
 const FundsService = require('../../services/FundsServices/index.js');
 const TransactionServices = require('../../services/TransactionServices/index.js');
 const StatementServices = require('../../services/StatementServices/index.js');
+const bodyParser = require('body-parser');
 
+const urlencodedParser = bodyParser.urlencoded({ extended: true });
+
+
+
+const cors = require('cors');
 require('dotenv').config()
 
 Userrouter.get('/user', (req, res) => {
     res.send('welcome to user page');
 });
 
-Userrouter.post('/signup', (req, res) => {
+Userrouter.use(
+    cors({
+        origin: '*'
+    })
+)
+Userrouter.use(bodyParser.json());
+
+Userrouter.post('/signup',urlencodedParser ,(req, res) => {
     user_id = crypto.randomUUID();
     try{
+        
         const user = {
             id: user_id,
-            name: req.query.name,
-            email: req.query.email,
-            password: req.query.password,
-            mobile_no: req.query.mobile_no,
+            name: req.body.name,
+            email: req.body.email,
+            password: req.body.password,
+            mobile_no: req.body.mobile_no,
             isadmin: false,
         }
     
@@ -33,9 +47,19 @@ Userrouter.post('/signup', (req, res) => {
             ifsc_code: 'SBIN0000000',
         }
         var message = UserServices.CREATE_USER(user,account);
-        res.json({
-            message:message,
-        })
+        message.then(
+            (message) => {
+                res.json({
+                    message:message,
+                })
+            }
+        ).catch((err) => {
+            console.log(err);
+            res.json({
+                message:err,
+            })
+        }
+        )
     }
     catch(err){
         console.log(err);
@@ -48,8 +72,8 @@ Userrouter.post('/signup', (req, res) => {
 Userrouter.post('/login', (req, res) => {
     try{
         const user = {
-            email: req.query.email,
-            password: req.query.password,
+            email: req.body.email,
+            password: req.body.password,
         }
         // console.log(user);
         const auth = UserServices.AUTH_USER(user);
@@ -58,6 +82,7 @@ Userrouter.post('/login', (req, res) => {
             (user) => {
                 res.json({
                     user:user,
+                    message:"User logged in successfully"
                 })
             }
         ).catch((err) => {
@@ -79,7 +104,7 @@ Userrouter.post('/login', (req, res) => {
 // adding funds to account
 Userrouter.post('/addfunds/user/:id', (req, res) => {
     try{
-        var message = FundsService.ADD_FUNDS(req.params.id,req.query.amount);
+        var message = FundsService.ADD_FUNDS(req.params.id,req.body.amount);
         message.then(
             (message) => {
                 res.json({
@@ -129,9 +154,10 @@ Userrouter.get('/transactions', (req, res) => {
 // fund transfer
 Userrouter.post('/fundtransfer', (req, res) => {
     try{
-        const from_id = req.query.from_id;
-        const to_id = req.query.to_id;
-        const amount = req.query.amount;
+        const from_id = req.body.from_id;
+        const to_id = req.body.to_id;
+        const amount = req.body.amount;
+        const description = req.body.description;
         const transfer = FundsService.FUND_TRANSFER(from_id,to_id,amount);
         transfer.then(
             (message) => {

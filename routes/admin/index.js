@@ -4,7 +4,14 @@ const crypto = require('crypto');
 const services = require('../../services/index.js');
 const UserService = require('../../services/UserServices/index.js');
 const TransactionServices = require('../../services/TransactionServices/index.js');
+const cors = require('cors');
 
+
+AdminRouter.use(
+    cors({
+        origin: '*'
+    })
+)
 
 AdminRouter.get('/admin', (req, res) => {
     res.send('welcome to admin page');

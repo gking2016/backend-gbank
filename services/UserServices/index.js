@@ -3,33 +3,24 @@ const conn = services.conn;
 
 function CREATE_USER(user,account){
     // creation of user
-    conn.query(`
-        INSERT INTO USERS VALUES(
-            '${user.id}',
-            '${user.name}',
-            '${user.email}',
-            '${user.password}',
-            '${user.mobile_no}',
-            ${user.isadmin}
-        )
-    `,(err) => {
-        if(err) return 'Error in creating user';
-    });
+    return new Promise((resolve,reject) => {
+        conn.query(`SELECT * FROM USERS WHERE name='${user.name}'`,(err,result) => {
+            if(err) reject(err);
+            console.log(result);
+            if(result.length !== 0) reject('User already exists');
+            else {
+                conn.query(`INSERT INTO USERS (ID,NAME,EMAIL,PASSWORD,MOBILE,ISADMIN) VALUES ('${user.id}','${user.name}','${user.email}','${user.password}','${user.mobile_no}',${user.isadmin})`,(err) => {
+                    if(err) reject(err);
+                });
 
-    // creation of account for user 
-    conn.query(`
-    INSERT INTO ACCOUNTS VALUES(
-        '${account.id}',
-        '${account.user_id}',
-        ${account.balance},
-        '${account.account_type}',
-        '${account.ifsc_code}'
-    )`,(err) => {
-        if(err) return 'Error in creating account';
-        
-    });
+                conn.query(`INSERT INTO ACCOUNTS (ACCOUNT_NUMBER,USERID,BALANCE,ACCOUNT_TYPE,IFSC) VALUES ('${account.id}','${account.user_id}','${account.balance}','${account.account_type}','${account.ifsc_code}')`,(err) => {
+                    if(err) reject(err);
+                    resolve('User created successfully');
+                });
 
-    return 'User created successfully';
+            }
+        });
+    })
 }
 
 function AUTH_USER(user){
@@ -41,6 +32,7 @@ function AUTH_USER(user){
         });
     });
 }
+
 
 function USERS(){
     return new Promise((resolve,reject) => {

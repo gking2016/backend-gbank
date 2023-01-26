@@ -9,19 +9,21 @@ function ADD_FUNDS(user_id,amount){
         conn.query(`UPDATE ACCOUNTS SET balance=balance+${amount} WHERE userid='${user_id}'`,(err) => {
             if(err) reject(err);
         });
-        const sql =`INSERT INTO TRANSACTIONS VALUES(
+        conn.query(`INSERT INTO TRANSACTIONS VALUES(
             '${crypto.randomUUID()}',
             '${user_id}',
             '${user_id}',
             ${amount},
-            '${services.dateTime.date}',
-            'CREDIT',
-            'DEPOSIT'
-        )`;
-        conn.query(sql,(err) => {
+            '${services.dateTime().date}',
+            'DEBIT',
+            'RECHARGE'
+        );`,(err) => {
             if(err) reject(err);
-        });
-        resolve('Funds added successfully');
+            else{
+                resolve('Funds added successfully');
+            }
+        })
+        
     });
 
 }
@@ -31,8 +33,8 @@ function FUND_TRANSFER(from_id,to_id,amount){
     return new Promise((resolve,reject) => {
         conn.query(`SELECT balance FROM ACCOUNTS WHERE userid='${from_id}'`,(err,result) => {
             if(err) reject(err);
-            // if(result.length == 0) reject('User not found');
-            console.log(result);
+            if(result.length == 0) reject('User not found');
+            // console.log(result);
             if(result[0].balance < amount) reject('Insufficient funds');
             conn.query(`UPDATE ACCOUNTS SET balance=balance-${amount} WHERE userid='${from_id}'`,(err) => {
                 if(err) reject(err);
@@ -45,8 +47,8 @@ function FUND_TRANSFER(from_id,to_id,amount){
                 '${from_id}',
                 '${to_id}',
                 ${amount},
-                '${services.dateTime.date}',
-                'DEBIT',
+                '${services.dateTime().date}',
+                'CREDIT',
                 'TRANSFER'
             )`,(err) => {
                 if(err) reject(err);

@@ -10,7 +10,7 @@ app.use(Userrouter);
 app.use(Adminrouter);
 
 app.use(cors({
-    origin:'*'
+    origin: '*'
 }));
 
 
