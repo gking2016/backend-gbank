@@ -1,13 +1,13 @@
 const express = require('express');
 const cors = require('cors');
-const PORT = process.env.PORT || 3000;
+const PORT = 8080;
 const app = express();
 const Userrouter = require('./routes/User/index.js');
-const Adminrouter = require('./routes/Admin/index.js');
+const Adminrouter = require('./routes/admin/index.js');
 
 
 app.use(Userrouter);
-app.use(Adminrouter);
+// app.use(Adminrouter);
 
 app.use(cors({
     origin: '*'
